@@ -1,0 +1,83 @@
+﻿@page "/propiedades"
+@using Modelos.DTO
+@using Repositorio.IRespositorio
+@inject IPropiedadRepositorio PropiedadRepositorio
+
+<h1 class="text-center">Propiedades</h1>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-7">
+                <h4 class="card-title text-dark">Lista Propiedades</h4>
+            </div>
+            <div class="col-3 offset-2">
+                <NavLink href="crear-propiedad" class="btn btn-primary"><i class="bi bi-plus-circle-fill">Nueva propiedad</i></NavLink>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nombre</th>
+                    <th>Descripcion</th>
+                    <th>Habitaciones</th>
+                    <th>Baños</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Lugar</th>
+                    <th>Precio</th>
+                    <th>Activo</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (@propiedadDTO.Count() > 0)
+                {
+                    foreach (var propiedad in propiedadDTO)
+                    {
+                        <tr>
+                            <td>@propiedad.Id</td>
+                            <td>@propiedad.Name</td>
+                            <td>@propiedad.Descripcion</td>
+                            <td>@propiedad.Habitaciones</td>
+                            <td>@propiedad.Banios</td>
+                            <td>@propiedad.Latitude</td>
+                            <td>@propiedad.Longitude</td>
+                            <td>@propiedad.Place</td>
+                            <td>@propiedad.Price</td>
+                            <td>@propiedad.Activo</td>
+                            <td>
+                                <NavLink href="@($"editar-propiedad/{propiedad.Id}")" class="btn btn-success"><i class="bi bi-gear-fill">Editar Propiedad</i></NavLink>
+                                <button class="btn btn-danger" @onclick="() => ManejadorOnBorrar(propiedad.Id)"><i class="bi bi-trash-fill">Borrar</i></button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5">No hay registros</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+@code {
+    private IEnumerable<PropiedadDTO> propiedadDTO { get; set; } = new List<PropiedadDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        //Recuperamos todas las categorias
+        propiedadDTO = await PropiedadRepositorio.GetAllPropiedads();
+    }
+
+    private async Task ManejadorOnBorrar(int propiedadId)
+    {
+
+    }
+}

@@ -1,0 +1,198 @@
+﻿@page "/crear-propiedad"
+@using Modelos.DTO
+@using Repositorio.IRespositorio
+@inject IPropiedadRepositorio PropiedadRepositorio
+@inject NavigationManager navigationManager
+@inject ICategoriaRepositorio CategoriaRepositorio
+
+
+<h1 class="text-center">Crear Propiedad</h1>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert @claseAlerta alert-dismissible fade show" role="alert">
+        @mensaje
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-7">
+                <h2 class="text-dark">Nueva Propiedad</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <EditForm Model="@propiedadDTO"
+                  OnValidSubmit="ManejadorOnCrearPropiedad">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="container">
+
+                @* Nombre *@
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Nombre:</label>
+                    <div class="col-6">
+                        <InputText @bind-Value="@propiedadDTO.Name" class="form-control" placeholder="Ingresa el nombre" />
+                        <ValidationMessage For="() => propiedadDTO.Name" />
+                    </div>
+                </div>
+
+                @* Descripción *@
+                <div class="form-group row mt-2">
+                    <label class="col-2 col-form-label">Descripción:</label>
+                    <div class="col-6">
+                        <InputText @bind-Value="@propiedadDTO.Descripcion" class="form-control" placeholder="Ingresa la descripción" />
+                        <ValidationMessage For="() => propiedadDTO.Descripcion" />
+                    </div>
+                </div>
+
+                @* Área *@
+                <div class="form-group row mt-2">
+                    <label class="col-2 col-form-label">Área (m²):</label>
+                    <div class="col-6">
+                        <InputNumber @bind-Value="@propiedadDTO.Area" class="form-control" />
+                        <ValidationMessage For="() => propiedadDTO.Area" />
+                    </div>
+                </div>
+
+                @* Habitaciones *@
+                <div class="form-group row mt-2">
+                    <label class="col-2 col-form-label">Habitaciones:</label>
+                    <div class="col-6">
+                        <InputNumber @bind-Value="@propiedadDTO.Habitaciones" class="form-control" />
+                        <ValidationMessage For="() => propiedadDTO.Habitaciones" />
+                    </div>
+                </div>
+
+                @* Baños *@
+                <div class="form-group row mt-2">
+                    <label class="col-2 col-form-label">Baños:</label>
+                    <div class="col-6">
+                        <InputNumber @bind-Value="@propiedadDTO.Banios" class="form-control" />
+                        <ValidationMessage For="() => propiedadDTO.Banios" />
+                    </div>
+                </div>
+
+                @* Latitud *@
+                <div class="form-group row mt-2">
+                    <label class="col-2 col-form-label">Latitud:</label>
+                    <div class="col-6">
+                        <InputNumber @bind-Value="@propiedadDTO.Latitude" class="form-control" step="any" />
+                        <ValidationMessage For="() => propiedadDTO.Latitude" />
+                    </div>
+                </div>
+
+                @* Longitud *@
+                <div class="form-group row mt-2">
+                    <label class="col-2 col-form-label">Longitud:</label>
+                    <div class="col-6">
+                        <InputNumber @bind-Value="@propiedadDTO.Longitude" class="form-control" step="any" />
+                        <ValidationMessage For="() => propiedadDTO.Longitude" />
+                    </div>
+                </div>
+
+                @* Lugar *@
+                <div class="form-group row mt-2">
+                    <label class="col-2 col-form-label">Lugar:</label>
+                    <div class="col-6">
+                        <InputText @bind-Value="@propiedadDTO.Place" class="form-control" placeholder="Ingresa el lugar" />
+                        <ValidationMessage For="() => propiedadDTO.Place" />
+                    </div>
+                </div>
+
+                @* Precio *@
+                <div class="form-group row mt-2">
+                    <label class="col-2 col-form-label">Precio:</label>
+                    <div class="col-6">
+                        <InputNumber @bind-Value="@propiedadDTO.Price" class="form-control" step="any" />
+                        <ValidationMessage For="() => propiedadDTO.Price" />
+                    </div>
+                </div>
+
+                @* Activo *@
+                <div class="form-group row mt-2">
+                    <label class="col-2 col-form-label">¿Activo?</label>
+                    <div class="col-6">
+                        <InputCheckbox @bind-Value="@propiedadDTO.Activo" class="form-check-input" />
+                        <ValidationMessage For="() => propiedadDTO.Activo" />
+                    </div>
+                </div>
+
+                @* DropDown *@
+                <div class="form-group row mt-2">
+                    <label class="col-2 col-form-label">Categoría:</label>
+                    <div class="col-6">
+                        <InputSelect @bind-Value="@categoriaSelect.Id" class="form-control">
+                            @foreach (var categoria in @DropDownCategoriaDTO)
+                            {
+                                <option value="@categoria.Id">@categoria.NombreCategoria</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => propiedadDTO.CategoriaId" />
+                    </div>
+                </div>
+
+                @* Botones *@
+                <div class="form-group row mt-4">
+                    <div class="col-2">
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                    </div>
+                    <div class="col-6">
+                        <NavLink href="property" class="btn btn-primary">Volver</NavLink>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private PropiedadDTO propiedadDTO { get; set; } = new PropiedadDTO();
+
+
+    private DropDownCategoriaDTO categoriaSelect = new DropDownCategoriaDTO();
+
+    //Obtenemos la lista de categorias en un dropdown
+    private IEnumerable<DropDownCategoriaDTO> DropDownCategoriaDTO { get; set; } = new List<DropDownCategoriaDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Recuperamos el dropdown
+        DropDownCategoriaDTO = await CategoriaRepositorio.GetDropDownCategorias();
+    }
+
+    private string mensaje;
+    private string claseAlerta;
+
+    private async Task ManejadorOnCrearPropiedad()
+    {
+        var nombrePropiedad = await PropiedadRepositorio.PropiedadExists(propiedadDTO.Name);
+
+        if (nombrePropiedad != null)
+        {
+            mensaje = "Ya existe una propiedad con ese nombre.";
+            claseAlerta = "alert-danger";
+            return;
+        }
+
+        var propiedadCreated = await PropiedadRepositorio.CrearPropiedad(propiedadDTO);
+
+        if (propiedadCreated != null)
+        {
+            mensaje = "Propiedad creada exitosamente.";
+            claseAlerta = "alert-success";
+
+            await Task.Delay(2000);
+            navigationManager.NavigateTo("property");
+        }
+        else
+        {
+            mensaje = "Ocurrió un error al crear la propiedad.";
+            claseAlerta = "alert-danger";
+        }
+    }
+}

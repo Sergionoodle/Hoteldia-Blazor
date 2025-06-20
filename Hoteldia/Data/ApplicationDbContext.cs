@@ -13,5 +13,7 @@ namespace Hoteldia.Data
 
         // Agregamos los modelos
         public DbSet<Categoria> Categorias { get; set; }
+        public DbSet<Propiedad> Propiedad { get; set; }
+        public DbSet<ImagenPropiedad> ImagenPropiedad { get; set; }
     }
 }
