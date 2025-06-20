@@ -18,6 +18,8 @@ namespace Hoteldia.Repositorio.IRespositorio
         public Task<CategoriaDTO> CategoriaExists(string nombre);
 
         public Task<int> BorrarCategoria(int categoriaId);
-        //public Task<IEnumerable<CategoriaDTO>> GetDropDownCategorias();
+        
+        //Vamos a sacar nuestro desplegable de categorias
+        public Task<IEnumerable<DropDownCategoriaDTO>> GetDropDownCategorias();
     }
 }

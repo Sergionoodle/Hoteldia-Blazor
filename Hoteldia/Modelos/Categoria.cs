@@ -14,5 +14,7 @@ namespace Hoteldia.Modelos
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
 
         public DateTime FechaActualizacion{ get; set; }
+
+        public virtual ICollection<Propiedad> Propiedad { get; set; }
     }
 }

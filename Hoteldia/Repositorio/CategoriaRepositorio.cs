@@ -112,5 +112,19 @@ namespace Hoteldia.Repositorio
                 return null;
             }
         }
+
+        //Implementamos nuestro nuevo metodo para el dropdown
+        public async Task<IEnumerable<DropDownCategoriaDTO>> GetDropDownCategorias()
+        {
+            try
+            {
+                IEnumerable<DropDownCategoriaDTO> dropDownDTO = _mapper.Map<IEnumerable<Categoria>, IEnumerable<DropDownCategoriaDTO>>(_db.Categorias);
+                return (dropDownDTO);
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
     }
 }
