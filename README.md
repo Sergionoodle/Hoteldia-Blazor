@@ -69,9 +69,8 @@ La base de datos utilizada es **SQL Server**, gestionada mediante **Entity Frame
 
 Los cambios en el esquema de la base de datos se aplican mediante migraciones:
 
-```bash
-Add-Migration NombreMigracion
-Update-Database
+- Add-Migration NombreMigracion
+- Update-Database
 
 
 ## 🚧 Funcionalidades en desarrollo
