@@ -3,6 +3,7 @@ using Hoteldia.Components.Account;
 using Hoteldia.Data;
 using Hoteldia.Repositorio;
 using Hoteldia.Repositorio.IRespositorio;
+using Hoteldia.Servicios;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +40,9 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 
 //Añadimos los servicios
 builder.Services.AddScoped<ICategoriaRepositorio, CategoriaRepositorio>();
+builder.Services.AddScoped<IPropiedadRepositorio, PropiedadRepositorio>();
+builder.Services.AddScoped<IImagenPropiedadRepositori, ImagenPropiedadRepositorio>();
+builder.Services.AddScoped<ISubida, SubidaArchivo>();
 
 var app = builder.Build();
 
