@@ -4,7 +4,8 @@
 @inject IPropiedadRepositorio PropiedadRepositorio
 @inject NavigationManager navigationManager
 @inject ICategoriaRepositorio CategoriaRepositorio
-
+@inject ISubida SubidaArchivo
+@inject IImagenPropiedadRepositori ImagenPropiedadRepositorio
 
 <h1 class="text-center">Crear Propiedad</h1>
 
@@ -136,13 +137,47 @@
                     </div>
                 </div>
 
+                @* Imagenes *@
+                <div class="form-group row mt-2">
+                    <hr />
+                    <h4>Imágenes Hotel</h4>
+                    <InputFile OnChange="@ManejadorOnSubidaArchivo" multiple></InputFile>
+                    <div class="row">
+                        @if (@estaIniciadoProcesoSubidaImagen)
+                        {
+                            <div class="col-md-12">
+                                <span><i class="bi bi-arrow-repeat">Porfavor espere mientras suben las imagenes...</i></span>
+                            </div>
+                        }
+
+                        @if (propiedadDTO.UrlImagenes != null && @propiedadDTO.UrlImagenes.Count > 0)
+                        {
+                            int serial = 1;
+                            foreach (var imagenProp in propiedadDTO.UrlImagenes)
+                            {
+                                <div class="col-md-2 mt-3">
+                                    <div class="imagen-propiedad" style="background: url('@imagenProp') 50% 50%">
+                                        <span class="titulo-imagen-pripiedad">@serial</span>
+                                    </div>
+
+                                    <button type="button" @onclick="() => BorrarImagen(imagenProp)" class="btn btn-outline-danger btn-block mt-4">
+                                        Borrar
+                                    </button>
+
+                                </div>
+                                serial++;
+                            }
+                        }
+                    </div>
+                </div>
+
                 @* Botones *@
                 <div class="form-group row mt-4">
                     <div class="col-2">
                         <button type="submit" class="btn btn-success">Guardar</button>
                     </div>
                     <div class="col-6">
-                        <NavLink href="property" class="btn btn-primary">Volver</NavLink>
+                        <NavLink href="propiedades" class="btn btn-primary">Volver</NavLink>
                     </div>
                 </div>
             </div>
@@ -152,13 +187,15 @@
 
 @code {
     private PropiedadDTO propiedadDTO { get; set; } = new PropiedadDTO();
-
-
     private DropDownCategoriaDTO categoriaSelect = new DropDownCategoriaDTO();
+
+    //Miramos si esta iniciado el proceso de subida
+    private bool estaIniciadoProcesoSubidaImagen { get; set; } = false;
 
     //Obtenemos la lista de categorias en un dropdown
     private IEnumerable<DropDownCategoriaDTO> DropDownCategoriaDTO { get; set; } = new List<DropDownCategoriaDTO>();
 
+    private ImagenPropiedadDTO imagenDTO { get; set; } = new ImagenPropiedadDTO();
     protected override async Task OnInitializedAsync()
     {
         //Recuperamos el dropdown
@@ -178,18 +215,98 @@
             claseAlerta = "alert-danger";
             return;
         }
-
+        //Le pasamos la categoria seleccionada
+        propiedadDTO.CategoriaId = categoriaSelect.Id;
         var propiedadCreated = await PropiedadRepositorio.CrearPropiedad(propiedadDTO);
+        //Creamos el metodo que guardará las imagenes
+        await AgregarImagenesProp(propiedadCreated);
+        navigationManager.NavigateTo("propiedades");
+    }
 
-        if (propiedadCreated != null)
+    private async Task AgregarImagenesProp(PropiedadDTO propiedad)
+    {
+        foreach (var url in propiedadDTO.UrlImagenes)
         {
-            mensaje = "Propiedad creada exitosamente.";
-            claseAlerta = "alert-success";
-
-            await Task.Delay(2000);
-            navigationManager.NavigateTo("property");
+            if (propiedadDTO.ImagenPropiedad == null || propiedadDTO.ImagenPropiedad.Where(x => x.UrlImagen == url).Count() == 0)
+            {
+                imagenDTO = new ImagenPropiedadDTO()
+                    {
+                    PropiedadId = propiedad.Id,
+                    UrlImagen = url
+                    };
+                await ImagenPropiedadRepositorio.CrearPropiedadImagen(imagenDTO);
+            }
         }
-        else
+    }
+
+    //Le pasamos el archivo que vamos a guardar
+    private async Task ManejadorOnSubidaArchivo(InputFileChangeEventArgs e)
+    {
+        estaIniciadoProcesoSubidaImagen = true;
+        try
+        {
+            var imagenes = new List<string>();
+            //Si hay una imagen
+            if (e.GetMultipleFiles().Count() > 0)
+            {
+                foreach (var file in e.GetMultipleFiles())
+                {
+                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(file.Name);
+                    if (fileInfo.Extension.ToLower() == ".jpg"
+                        || fileInfo.Extension.ToLower() == ".png"
+                        || fileInfo.Extension.ToLower() == ".jpeg"
+                    )
+                    {
+                        var uploadedImage = await SubidaArchivo.SubirArchivo(file);
+                        imagenes.Add(uploadedImage);
+                    }
+                    else
+                    {
+                        mensaje = "Ocurrió un error al crear la propiedad.";
+                        claseAlerta = "alert-danger";
+                    }
+                }
+                if (imagenes.Any())
+                {
+                    if (propiedadDTO.UrlImagenes != null && propiedadDTO.UrlImagenes.Any())
+                    {
+                        propiedadDTO.UrlImagenes.AddRange(imagenes);
+                    }
+                    //Si no existen, se le agregan
+                    else
+                    {
+                        propiedadDTO.UrlImagenes = new List<string>();
+                        propiedadDTO.UrlImagenes.AddRange(imagenes);
+                    }
+                }
+                else
+                {
+                    mensaje = "Ocurrió un error al crear la propiedad.";
+                    claseAlerta = "alert-danger";
+                }
+
+                estaIniciadoProcesoSubidaImagen = false;
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    private async Task BorrarImagen(string urlImagen)
+    {
+        try
+        {
+            var imageIndex = propiedadDTO.UrlImagenes.FindIndex(x => x == urlImagen);
+            var nombre = urlImagen.Replace($"{navigationManager.BaseUri}Imagenes/", "");
+            if(propiedadDTO.Id == 0)
+            {
+                var result = SubidaArchivo.BorrarArchivo(nombre);
+            }
+            propiedadDTO.UrlImagenes.RemoveAt(imageIndex);
+
+        } catch (Exception)
         {
             mensaje = "Ocurrió un error al crear la propiedad.";
             claseAlerta = "alert-danger";
