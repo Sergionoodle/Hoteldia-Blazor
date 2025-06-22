@@ -43,5 +43,9 @@ namespace Hoteldia.Modelos.DTO
 
         //Relación con el modelo
         public int CategoriaId { get; set; }
+    
+        public virtual ICollection<ImagenPropiedad> ImagenPropiedad { get; set; }
+
+        public List<string> UrlImagenes { get; set; }
     }
 }

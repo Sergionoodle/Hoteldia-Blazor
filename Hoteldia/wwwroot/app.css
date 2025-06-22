@@ -58,3 +58,22 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+.imagen-propiedad {
+    display : block;
+    width: 100%;
+    height: 150px;
+    background-size: cover !important;
+    border: 3px solid green;
+    position: relative;
+}
+
+.titulo-imagen-propiedad {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: green;
+    color: white;
+    padding: 0px 6px;
+    display: inline-block
+}

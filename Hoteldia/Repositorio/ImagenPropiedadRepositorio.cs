@@ -52,6 +52,7 @@ namespace Hoteldia.Repositorio
             return await _db.SaveChangesAsync();
         }
 
+
         public async Task<IEnumerable<ImagenPropiedadDTO>> GetImagenesPropiedad(int propiedadId)
         {
             return _mapper.Map<IEnumerable<ImagenPropiedad>, IEnumerable<ImagenPropiedadDTO>>(

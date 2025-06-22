@@ -39,34 +39,39 @@ namespace Hoteldia.Servicios
             try
             {
                 FileInfo info = new FileInfo(browserFile.Name);
-                //Para que no repitamos el nombre + la extension del file
                 var fileName = Guid.NewGuid().ToString() + info.Extension;
-                var folderDirectory = $"{_webHostEnviroment.WebRootPath}\\Imagenes";
-                var path = Path.Combine(_webHostEnviroment.WebRootPath, "Imagenes", fileName);
+
+                var folderDirectory = Path.Combine(_webHostEnviroment.WebRootPath, "Imagenes");
+                var path = Path.Combine(folderDirectory, fileName);
+
+                // Asegúrate de que el directorio exista
+                if (!Directory.Exists(folderDirectory))
+                {
+                    Directory.CreateDirectory(folderDirectory);
+                }
 
                 var memory = new MemoryStream();
 
-                await browserFile.OpenReadStream().CopyToAsync(memory);
-
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
+                // IMPORTANTE: aumentar tamaño permitido
+                await browserFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 15)
+                    .CopyToAsync(memory);
 
                 await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write))
                 {
                     memory.WriteTo(fs);
                 }
 
-                var url = $"{_configuration.GetValue<string>("ServerUrl")}";
+                var url = _configuration.GetValue<string>("ServerUrl");
                 var fullPath = $"{url}Imagenes/{fileName}";
 
                 return fullPath;
             }
             catch (Exception ex)
             {
-                throw ex;
+                Console.WriteLine($"Error al subir archivo: {ex.Message}");
+                throw;
             }
         }
+
     }
 }
