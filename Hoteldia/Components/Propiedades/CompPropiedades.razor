@@ -30,6 +30,7 @@
                     <th>Longitude</th>
                     <th>Lugar</th>
                     <th>Precio</th>
+                    <th>Categoría</th>
                     <th>Activo</th>
                 </tr>
             </thead>
@@ -48,6 +49,7 @@
                             <td>@propiedad.Longitude</td>
                             <td>@propiedad.Place</td>
                             <td>@propiedad.Price</td>
+                            <td>@propiedad.Categoria.NombreCategoria</td>
                             <td>@propiedad.Activo</td>
                             <td>
                                 <NavLink href="@($"editar-propiedad/{propiedad.Id}")" class="btn btn-success"><i class="bi bi-gear-fill">Editar Propiedad</i></NavLink>
@@ -66,8 +68,32 @@
         </table>
     </div>
 </div>
+
+@if (BorrarId != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">Confirmar Borrado</h5>
+                    <button type="button" class="btn-close" @onclick="() => ClickBorrado(false)"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro que deseas borrar la propiedad con ID <strong>@BorrarId</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="() => ClickBorrado(false)">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="() => ClickBorrado(true)">Borrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private IEnumerable<PropiedadDTO> propiedadDTO { get; set; } = new List<PropiedadDTO>();
+    private bool estado { get; set; } = false;
+    private int? BorrarId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -76,8 +102,20 @@
         propiedadDTO = await PropiedadRepositorio.GetAllPropiedads();
     }
 
+
     private async Task ManejadorOnBorrar(int propiedadId)
     {
+        BorrarId = propiedadId;
+    }
 
+    public async Task ClickBorrado(bool confirm)
+    {
+        if (confirm && BorrarId != null)
+        {
+            await PropiedadRepositorio.BorrarPropiedad(BorrarId.Value);
+            propiedadDTO = await PropiedadRepositorio.GetAllPropiedads();
+        }
+
+        BorrarId = null; // Oculta el modal
     }
 }

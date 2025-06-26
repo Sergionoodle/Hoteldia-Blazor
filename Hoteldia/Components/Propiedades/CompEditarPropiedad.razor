@@ -1,4 +1,4 @@
-﻿@page "/crear-propiedad"
+﻿@page "/editar-propiedad/{Id:int}"
 @using Modelos.DTO
 @using Repositorio.IRespositorio
 @inject IPropiedadRepositorio PropiedadRepositorio
@@ -21,14 +21,14 @@
     <div class="card-header">
         <div class="row">
             <div class="col-7">
-                <h2 class="text-dark">Nueva Propiedad</h2>
+                <h2 class="text-dark">Editar Propiedad</h2>
             </div>
         </div>
     </div>
 
     <div class="card-body">
         <EditForm Model="@propiedadDTO"
-                  OnValidSubmit="ManejadorOnCrearPropiedad">
+                  OnValidSubmit="ManejadorOnEditarPropiedad">
             <DataAnnotationsValidator />
             <ValidationSummary />
             <div class="container">
@@ -194,33 +194,52 @@
 
     //Obtenemos la lista de categorias en un dropdown
     private IEnumerable<DropDownCategoriaDTO> DropDownCategoriaDTO { get; set; } = new List<DropDownCategoriaDTO>();
-
     private ImagenPropiedadDTO imagenDTO { get; set; } = new ImagenPropiedadDTO();
+    private List<string> NombresImgBorradas { get; set; } = new List<string>();
+
+    [Parameter]
+    public int? Id { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         //Recuperamos el dropdown
         DropDownCategoriaDTO = await CategoriaRepositorio.GetDropDownCategorias();
+
+        if(Id != null)
+        {
+            propiedadDTO = await PropiedadRepositorio.GetPropiedad(Id.Value);
+
+            if(propiedadDTO?.ImagenPropiedad != null) 
+            {
+                propiedadDTO.UrlImagenes = propiedadDTO.ImagenPropiedad.Select(u => u.UrlImagen).ToList();    
+            }
+        }
     }
 
     private string mensaje;
     private string claseAlerta;
 
-    private async Task ManejadorOnCrearPropiedad()
+    private async Task ManejadorOnEditarPropiedad()
     {
-        var nombrePropiedad = await PropiedadRepositorio.PropiedadExists(propiedadDTO.Name);
-
-        if (nombrePropiedad != null)
-        {
-            mensaje = "Ya existe una propiedad con ese nombre.";
-            claseAlerta = "alert-danger";
-            return;
-        }
-        //Le pasamos la categoria seleccionada
+        //Se obtiene la categoría
         propiedadDTO.CategoriaId = categoriaSelect.Id;
-        var propiedadCreated = await PropiedadRepositorio.CrearPropiedad(propiedadDTO);
-        //Creamos el metodo que guardará las imagenes
-        await AgregarImagenesProp(propiedadCreated);
-        navigationManager.NavigateTo("propiedades");
+
+        //Si entra se actualiza la propiedad con imagenes 
+        var resultadoActualizar = await PropiedadRepositorio.ActualizarPropiedad(propiedadDTO.Id, propiedadDTO);
+
+        if (propiedadDTO.UrlImagenes != null && propiedadDTO.UrlImagenes.Any() || NombresImgBorradas != null && NombresImgBorradas.Any())
+        {
+            if (NombresImgBorradas != null && NombresImgBorradas.Any())
+            {
+                foreach (var nombreImgBorrada in NombresImgBorradas)
+                {
+                    var nomImg = nombreImgBorrada.Replace($"{navigationManager.BaseUri}Imagenes/", "");
+                    var resultado = SubidaArchivo.BorrarArchivo(nomImg);
+                    await ImagenPropiedadRepositorio.BorrarImagenPorUrlImagen(nombreImgBorrada);
+                }
+            }
+            await AgregarImagenesProp(resultadoActualizar);
+        }
     }
 
     private async Task AgregarImagenesProp(PropiedadDTO propiedad)
@@ -299,10 +318,9 @@
         {
             var imageIndex = propiedadDTO.UrlImagenes.FindIndex(x => x == urlImagen);
             var nombre = urlImagen.Replace($"{navigationManager.BaseUri}Imagenes/", "");
-            if(propiedadDTO.Id == 0)
-            {
-                var result = SubidaArchivo.BorrarArchivo(nombre);
-            }
+            NombresImgBorradas ??= new List<string>();
+            NombresImgBorradas.Add(urlImagen);
+
             propiedadDTO.UrlImagenes.RemoveAt(imageIndex);
 
         } catch (Exception)
