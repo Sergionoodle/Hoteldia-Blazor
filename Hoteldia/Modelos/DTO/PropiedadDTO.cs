@@ -43,7 +43,10 @@ namespace Hoteldia.Modelos.DTO
 
         //Relación con el modelo
         public int CategoriaId { get; set; }
-    
+
+        //Por aqui accederemos a la categoria
+        public virtual Categoria Categoria { get; set; }
+
         public virtual ICollection<ImagenPropiedad> ImagenPropiedad { get; set; }
 
         public List<string> UrlImagenes { get; set; }

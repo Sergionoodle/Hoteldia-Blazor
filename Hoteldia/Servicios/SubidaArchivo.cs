@@ -18,7 +18,7 @@ namespace Hoteldia.Servicios
             try
             {
                 //Vamos a pillar el directorio raiz, el nombre de la carpeta de imgs y pasamos el nombre del archivo
-                var path = $"{_webHostEnviroment.WebRootPath}\\Imagenes\\{nombreArchivo}";
+                var path = $"{_webHostEnviroment.WebRootPath}\\{nombreArchivo}";
                 //Si existe el path
                 if (File.Exists(path))
                 {

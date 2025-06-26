@@ -4,6 +4,7 @@ using Hoteldia.Modelos;
 using Hoteldia.Modelos.DTO;
 using Hoteldia.Repositorio.IRespositorio;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Hoteldia.Repositorio
 {
@@ -63,15 +64,28 @@ namespace Hoteldia.Repositorio
 
         public async Task<IEnumerable<PropiedadDTO>> GetAllPropiedads()
         {
-            try
+            try 
             {
-                IEnumerable<PropiedadDTO> propiedadDTO = _mapper.Map<IEnumerable<Propiedad>, IEnumerable<PropiedadDTO>>(_db.Propiedad);
-                return (propiedadDTO);
-            }
+                IEnumerable<PropiedadDTO> propiedadDTO =
+                    _mapper.Map<IEnumerable<Propiedad>, IEnumerable<PropiedadDTO>>
+                    (_db.Propiedad.Include(x => x.ImagenPropiedad).Include(c => c.Categoria));
+                return propiedadDTO;
+            } 
             catch (Exception ex)
             {
                 return null;
             }
+
+            //Toca conseguir las imagenes, así que vamos a cambiar esto un poco 
+            //try
+            //{
+            //    IEnumerable<PropiedadDTO> propiedadDTO = _mapper.Map<IEnumerable<Propiedad>, IEnumerable<PropiedadDTO>>(_db.Propiedad);
+            //    return (propiedadDTO);
+            //}
+            //catch (Exception ex)
+            //{
+            //    return null;
+            //}
         }
 
         public async Task<PropiedadDTO> GetPropiedad(int propiedadId)
