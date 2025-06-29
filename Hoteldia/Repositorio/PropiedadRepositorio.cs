@@ -47,6 +47,9 @@ namespace Hoteldia.Repositorio
             var propiedad = await _db.Propiedad.FindAsync(propiedadId);
             if (propiedad != null)
             {
+                var imagenes = await _db.ImagenPropiedad.Where(img => img.Id == propiedadId).ToListAsync();
+                _db.ImagenPropiedad.RemoveRange(imagenes);
+
                 _db.Propiedad.Remove(propiedad);
                 return await _db.SaveChangesAsync();
             }
