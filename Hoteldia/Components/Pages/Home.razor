@@ -1,7 +1,51 @@
 ﻿@page "/"
+@using Modelos.DTO
+@using Repositorio.IRespositorio
+@inject IPropiedadRepositorio PropiedadRepositorio
 
-<PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<PageTitle>Hoteles</PageTitle>
 
-Welcome to your new app.
+<h1 class="text-center">Hoteles</h1>
+
+<div class="row">
+    @foreach (var hotel in @propiedadesDTO)
+    {
+        <div class="col-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3>@hotel.Name</h3>
+                </div>
+                <div class="card-body">
+                    @if (hotel.ImagenPropiedad.Count() > 0)
+                    {
+                        foreach (var img in hotel.ImagenPropiedad)
+                        {
+                            <img src="@img.UrlImagen" class="img-fluid" />
+                        }    
+                    } 
+                    else
+                    {
+                        <img src="https://t3.ftcdn.net/jpg/03/45/05/92/360_F_345059232_CPieT8RIWOUk4JqBkkWkIETYAkmz2b75.jpg" class="img-fluid" />
+                    }
+                </div>
+                <div class="card-footer">
+
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+@code {
+    //Obtenemos las propiedades
+    private IEnumerable<PropiedadDTO> propiedadesDTO { get; set; } = new List<PropiedadDTO>();
+
+    //El metodo que inicializa el proyecto
+    protected override async Task OnInitializedAsync()
+    {
+        propiedadesDTO = await PropiedadRepositorio.GetAllPropiedads();
+    }
+
+}

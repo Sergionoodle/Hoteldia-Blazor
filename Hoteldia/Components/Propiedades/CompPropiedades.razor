@@ -2,6 +2,8 @@
 @using Modelos.DTO
 @using Repositorio.IRespositorio
 @inject IPropiedadRepositorio PropiedadRepositorio
+@inject NavigationManager navigationManager
+@inject ISubida subidaArchivo
 
 <h1 class="text-center">Propiedades</h1>
 
@@ -112,6 +114,14 @@
     {
         if (confirm && BorrarId != null)
         {
+            //Borramos las imagenes asociadas a la propiedad
+            PropiedadDTO prop = await PropiedadRepositorio.GetPropiedad(BorrarId.Value);
+            foreach(var img in prop.ImagenPropiedad)
+            {
+                var nomImg = img.UrlImagen.Replace($"{navigationManager.BaseUri}Imagenes/", "");
+                subidaArchivo.BorrarArchivo(nomImg);
+            }
+
             await PropiedadRepositorio.BorrarPropiedad(BorrarId.Value);
             propiedadDTO = await PropiedadRepositorio.GetAllPropiedads();
         }
